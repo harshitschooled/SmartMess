@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Booking History{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar2-check-fill text-primary"></i> Your Booking History</h2>
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="custom-card p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Meal Type</th>
+                        <th scope="col">Selected Choice</th>
+                        <th scope="col">Created At</th>
+                        <th scope="col">Last Updated</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                        <tr>
+                            <td class="fw-semibold">{{ booking.date.strftime("%A, %b %d, %Y") }}</td>
+                            <td class="text-capitalize">{{ booking.meal_type }}</td>
+                            <td>
+                                {% if booking.status == 'eating' %}
+                                    <span class="status-badge badge-eating"><i class="bi bi-check-circle-fill"></i> Eating</span>
+                                {% else %}
+                                    <span class="status-badge badge-skipping"><i class="bi bi-x-circle-fill"></i> Skipping</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ booking.created_at.strftime("%b %d, %Y %I:%M %p") }}</td>
+                            <td class="text-muted small">{{ booking.updated_at.strftime("%b %d, %Y %I:%M %p") }}</td>
+                            <td>
+                                <a href="{{ url_for('student.feedback', date=booking.date, meal_type=booking.meal_type) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-chat-dots-fill"></i> Feedback
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+                                <p class="mt-2">No bookings recorded yet. Go to the dashboard to start planning your meals!</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

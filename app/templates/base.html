@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartMess - Mess Management & Food Waste Reduction{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <i class="bi bi-clock-history"></i> SmartMess
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('home') }}">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'student' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'dashboard' in request.path %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Student Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'history' in request.path %}active{% endif %}" href="{{ url_for('student.booking_history') }}">
+                                    <i class="bi bi-calendar2-check"></i> Booking History
+                                </a>
+                            </li>
+                        {% elif current_user.role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'dashboard' in request.path %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                                    <i class="bi bi-speedometer2"></i> Admin Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'menu' in request.path %}active{% endif %}" href="{{ url_for('admin.manage_menus') }}">
+                                    <i class="bi bi-journal-text"></i> Menus
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'waste' in request.path %}active{% endif %}" href="{{ url_for('admin.food_waste') }}">
+                                    <i class="bi bi-trash"></i> Food Waste
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'feedback' in request.path %}active{% endif %}" href="{{ url_for('admin.view_feedback') }}">
+                                    <i class="bi bi-chat-left-text"></i> Feedbacks
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'analytics' in request.path %}active{% endif %}" href="{{ url_for('analytics.dashboard') }}">
+                                    <i class="bi bi-graph-up-arrow"></i> Analytics
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark font-weight-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ current_user.name }} ({{ current_user.role|capitalize }})
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-primary w-100" href="{{ url_for('auth.login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary w-100" href="{{ url_for('auth.register') }}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        {% if category == 'success' %}
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        {% elif category == 'danger' %}
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% elif category == 'warning' %}
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-lg-start">
+        <div class="container text-center">
+            <p class="mb-1"><strong>SmartMess</strong> &copy; 2026 - Mess Management and Food Waste Reduction System.</p>
+            <p class="mb-0 text-muted" style="font-size: 0.85rem;">Designed for portfolio enhancement & technical interview demonstration.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

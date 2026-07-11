@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Home{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="hero-title"><i class="bi bi-clock-history"></i> SmartMess</h1>
+        <p class="hero-subtitle">Optimize College Mess Kitchens, Stop Food Waste, and Automate Meal Attendance Booking with ease.</p>
+        {% if not current_user.is_authenticated %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+                    <i class="bi bi-box-arrow-in-right"></i> Log In
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-person-plus"></i> Register
+                </a>
+            </div>
+        {% else %}
+            <div>
+                {% if current_user.role == 'student' %}
+                    <a href="{{ url_for('student.dashboard') }}" class="btn btn-light btn-lg px-4 fw-semibold text-primary shadow-sm">
+                        <i class="bi bi-speedometer2"></i> Go to Student Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-light btn-lg px-4 fw-semibold text-teal shadow-sm" style="color: #0d9488;">
+                        <i class="bi bi-speedometer2"></i> Go to Admin Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Features & Problem -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <div class="text-primary mb-3" style="font-size: 2.5rem;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h3>The Wastage Problem</h3>
+                <p class="text-secondary">College kitchens cook blindly for thousands of students daily, resulting in tons of excess food prep and immense waste. SmartMess eliminates guessing.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <div class="text-teal mb-3" style="font-size: 2.5rem; color: #0d9488;">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h3>Eating or Skipping?</h3>
+                <p class="text-secondary">Students confirm their attendance for Breakfast, Lunch, or Dinner before strict daily deadlines. The kitchen only prepares food for registered students.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100">
+                <div class="text-success mb-3" style="font-size: 2.5rem;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <h3>Analytics & Logging</h3>
+                <p class="text-secondary">Admins monitor attendance trends, log daily prep and consumption in kilograms, evaluate food waste percentages, and collect student quality feedback.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How it Works Timeline -->
+    <div class="custom-card p-5 mb-5">
+        <h2 class="text-center mb-4"><i class="bi bi-gear-fill text-primary"></i> How It Works</h2>
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle mb-3 fs-5" style="width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+                    <h5>Register Account</h5>
+                    <p class="text-muted small">Students sign up with their college email address to gain access to booking portals.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle mb-3 fs-5" style="width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center;">2</span>
+                    <h5>Mark Bookings</h5>
+                    <p class="text-muted small">Mark "Eating" or "Skipping" before local kitchen deadlines close.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle mb-3 fs-5" style="width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+                    <h5>Kitchen Cooks</h5>
+                    <p class="text-muted small">Kitchen staff prepares exact proportions based on backend booking counts.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3">
+                    <span class="badge bg-primary rounded-circle mb-3 fs-5" style="width: 45px; height: 45px; display: inline-flex; align-items: center; justify-content: center;">4</span>
+                    <h5>Submit Feedback</h5>
+                    <p class="text-muted small">Students rate their meals and help administrators maintain taste and hygiene standards.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

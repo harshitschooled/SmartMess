@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="custom-card">
+                <div class="card-header card-header-gradient text-center">
+                    <h3 class="mb-0">{% if menu %}<i class="bi bi-pencil-square"></i>{% else %}<i class="bi bi-journal-plus"></i>{% endif %} {{ title }}</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.date.label(class="form-label fw-semibold") }}
+                                {% if form.date.errors %}
+                                    {{ form.date(class="form-control is-invalid", type="date") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.date.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.date(class="form-control", type="date") }}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {{ form.meal_type.label(class="form-label fw-semibold") }}
+                                {% if form.meal_type.errors %}
+                                    {{ form.meal_type(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.meal_type.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.meal_type(class="form-select") }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.items.label(class="form-label fw-semibold") }}
+                            {% if form.items.errors %}
+                                {{ form.items(class="form-control is-invalid", rows="5", placeholder="Enter menu items (e.g. Rice, Dal, Mixed Vegetable Curry, Curd)") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.items.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.items(class="form-control", rows="5", placeholder="Enter menu items (e.g. Rice, Dal, Mixed Vegetable Curry, Curd)") }}
+                            {% endif %}
+                            <small class="form-text text-muted">Separate items with commas or newlines to make it readable for students.</small>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="{{ url_for('admin.manage_menus') }}" class="btn btn-outline-secondary w-100">Cancel</a>
+                            </div>
+                            <div class="col-6">
+                                {{ form.submit(class="btn btn-primary w-100") }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

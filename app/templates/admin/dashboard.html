@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Admin Control Center</h1>
+            <p class="text-secondary"><i class="bi bi-clock"></i> Server Local Time: <strong>{{ today.strftime("%A, %b %d, %Y") }}</strong></p>
+        </div>
+        <div class="bg-primary text-white px-3 py-2 rounded shadow-sm">
+            <span class="fw-bold fs-5"><i class="bi bi-people-fill"></i> {{ students_count }}</span> Registered Students
+        </div>
+    </div>
+
+    <!-- Today's Attendance Overview Cards -->
+    <h3 class="mb-3 text-secondary"><i class="bi bi-person-check-fill"></i> Expected Attendance (Today)</h3>
+    <div class="row g-4 mb-5">
+        {% for meal in [('breakfast', expected_breakfast, skipping_breakfast, 'primary'), 
+                        ('lunch', expected_lunch, skipping_lunch, 'info'), 
+                        ('dinner', expected_dinner, skipping_dinner, 'success')] %}
+            <div class="col-md-4">
+                <div class="custom-card border-start border-4 border-{{ meal[3] }} p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="card-title text-capitalize mb-0">{{ meal[0] }}</h4>
+                        <span class="badge bg-{{ meal[3] }} text-capitalize">{{ meal[0] }}</span>
+                    </div>
+                    <div class="row text-center g-2">
+                        <div class="col-6 border-end">
+                            <span class="d-block display-6 fw-bold text-success">{{ meal[1] }}</span>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Eating</small>
+                        </div>
+                        <div class="col-6">
+                            <span class="d-block display-6 fw-bold text-danger">{{ meal[2] }}</span>
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Skipping</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Action Triggers -->
+    <div class="custom-card p-4 mb-5 bg-light border-0">
+        <h4 class="mb-3 text-dark"><i class="bi bi-lightning-fill text-warning"></i> Quick Operations</h4>
+        <div class="d-flex flex-wrap gap-3">
+            <a href="{{ url_for('admin.new_menu', date=today) }}" class="btn btn-primary">
+                <i class="bi bi-journal-plus"></i> Set Today's Menu
+            </a>
+            <a href="{{ url_for('admin.manage_menus') }}" class="btn btn-outline-primary">
+                <i class="bi bi-journal-text"></i> View Menus List
+            </a>
+            <a href="{{ url_for('admin.new_waste', date=today) }}" class="btn btn-teal text-white" style="background-color: #0d9488;">
+                <i class="bi bi-trash-fill"></i> Log Food Waste
+            </a>
+            <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-outline-teal" style="color: #0d9488; border-color: #0d9488;">
+                <i class="bi bi-bar-chart-fill"></i> View Analytics Charts
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Waste Logs -->
+        <div class="col-md-6">
+            <div class="custom-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-secondary"><i class="bi bi-trash"></i> Recent Food Waste Records</h4>
+                    <a href="{{ url_for('admin.food_waste') }}" class="btn btn-sm btn-link text-primary">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Meal</th>
+                                <th>Prep / Consumed</th>
+                                <th>Wastage %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in recent_waste %}
+                                <tr>
+                                    <td>{{ r.date.strftime("%b %d, %Y") }}</td>
+                                    <td class="text-capitalize">{{ r.meal_type }}</td>
+                                    <td>{{ r.food_prepared }}kg / {{ r.food_consumed }}kg</td>
+                                    <td>
+                                        <span class="badge {% if r.waste_percentage > 25 %}bg-danger{% elif r.waste_percentage > 10 %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                            {{ "%.1f"|format(r.waste_percentage) }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No waste records logged yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Feedback Logs -->
+        <div class="col-md-6">
+            <div class="custom-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-secondary"><i class="bi bi-chat-left-text"></i> Recent Feedbacks</h4>
+                    <a href="{{ url_for('admin.view_feedback') }}" class="btn btn-sm btn-link text-primary">View All</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for f in recent_feedback %}
+                        <div class="list-group-item px-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <span class="fw-semibold text-dark">{{ f.user.name }}</span>
+                                    <span class="text-muted small text-capitalize">({{ f.meal_type }} - {{ f.date.strftime("%b %d") }})</span>
+                                </div>
+                                <div>
+                                    {% for idx in range(1, 6) %}
+                                        {% if idx <= f.rating %}
+                                            <i class="bi bi-star-fill text-warning" style="font-size: 0.85rem;"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-muted" style="font-size: 0.85rem;"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="mb-0 text-secondary small">
+                                {% if f.comment %}
+                                    "{{ f.comment }}"
+                                {% else %}
+                                    <span class="text-muted italic">No comments.</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">No student feedback submitted yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

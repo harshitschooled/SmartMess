@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Student Feedback{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="mb-4">
+        <h2><i class="bi bi-chat-left-heart-fill text-primary"></i> Student Feedback Overview</h2>
+        <p class="text-secondary">Analyze ratings and suggestions submitted by students to optimize meal quality.</p>
+    </div>
+
+    <!-- Rating Averages Card Group -->
+    <div class="row g-4 mb-4">
+        {% for category in [('breakfast', avg_breakfast, 'primary', 'bi-egg-fried'), 
+                            ('lunch', avg_lunch, 'info', 'bi-sun-fill'), 
+                            ('dinner', avg_dinner, 'success', 'bi-moon-stars-fill')] %}
+            <div class="col-md-4">
+                <div class="custom-card p-3 d-flex align-items-center">
+                    <div class="bg-{{ category[2] }} text-white p-3 rounded-circle me-3" style="width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi {{ category[3] }} fs-4"></i>
+                    </div>
+                    <div>
+                        <small class="text-uppercase text-muted fw-semibold" style="font-size: 0.75rem;">{{ category[0] }} Avg Rating</small>
+                        <h4 class="mb-0 fw-bold">
+                            {{ category[1] }} / 5.0
+                            <span class="text-warning" style="font-size: 1.1rem;">
+                                {% set score = category[1]|round|int %}
+                                {% for r in range(1, 6) %}
+                                    {% if r <= score %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Feedback Entries -->
+    <div class="custom-card p-4">
+        <h4 class="mb-3 text-secondary"><i class="bi bi-chat-square-text"></i> Detailed Feedback Log</h4>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Meal Type</th>
+                        <th>Student</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Submitted At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in feedbacks %}
+                        <tr>
+                            <td>{{ f.date.strftime("%b %d, %Y") }}</td>
+                            <td class="text-capitalize">
+                                <span class="badge {% if f.meal_type == 'breakfast' %}bg-primary{% elif f.meal_type == 'lunch' %}bg-info{% else %}bg-success{% endif %}">
+                                    {{ f.meal_type }}
+                                </span>
+                            </td>
+                            <td class="fw-semibold">{{ f.user.name }}</td>
+                            <td>
+                                <span class="text-warning">
+                                    {% for r in range(1, 6) %}
+                                        {% if r <= f.rating %}
+                                            <i class="bi bi-star-fill"></i>
+                                        {% else %}
+                                            <i class="bi bi-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                                <span class="text-muted small">({{ f.rating }})</span>
+                            </td>
+                            <td style="max-width: 300px; word-wrap: break-word;">
+                                {% if f.comment %}
+                                    "{{ f.comment }}"
+                                {% else %}
+                                    <span class="text-muted italic small">No comment text.</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ f.created_at.strftime("%b %d, %Y %I:%M %p") }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No student feedback found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

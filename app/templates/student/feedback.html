@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Submit Feedback{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="custom-card">
+                <div class="card-header card-header-gradient text-center">
+                    <h3 class="mb-0"><i class="bi bi-chat-left-heart"></i> Meal Feedback</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('student.feedback') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Date -->
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Meal Date</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{% if prefill_date %}{{ prefill_date }}{% endif %}" required>
+                        </div>
+
+                        <!-- Meal Type -->
+                        <div class="mb-3">
+                            <label for="meal_type" class="form-label">Meal Type</label>
+                            <select class="form-select" id="meal_type" name="meal_type" required>
+                                <option value="" disabled {% if not prefill_meal %}selected{% endif %}>Select Meal Type</option>
+                                <option value="breakfast" {% if prefill_meal == 'breakfast' %}selected{% endif %}>Breakfast</option>
+                                <option value="lunch" {% if prefill_meal == 'lunch' %}selected{% endif %}>Lunch</option>
+                                <option value="dinner" {% if prefill_meal == 'dinner' %}selected{% endif %}>Dinner</option>
+                            </select>
+                        </div>
+
+                        <!-- Rating -->
+                        <div class="mb-4">
+                            <label class="form-label d-block">Overall Meal Rating</label>
+                            <div class="btn-group w-100" role="group" aria-label="Rating buttons">
+                                {% for r in range(1, 6) %}
+                                    <input type="radio" class="btn-check" name="rating" id="rating-{{ r }}" value="{{ r }}" required>
+                                    <label class="btn btn-outline-warning py-2" for="rating-{{ r }}">
+                                        {{ r }} <i class="bi bi-star-fill"></i>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            <small class="form-text text-muted">1 = Poor, 5 = Excellent</small>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label for="comment" class="form-label">Comments or Suggestions (Optional)</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4" 
+                                      placeholder="Tell us about the taste, portion sizes, or hygiene..."></textarea>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-secondary w-100">Cancel</a>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="btn btn-primary w-100">Submit Feedback</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

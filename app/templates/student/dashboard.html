@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <!-- Header Block -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-8">
+            <h1 class="h2 mb-1">Welcome, {{ current_user.name }}!</h1>
+            <p class="text-secondary"><i class="bi bi-calendar-event"></i> Today's Date: <strong>{{ today.strftime("%A, %b %d, %Y") }}</strong></p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{{ url_for('student.booking_history') }}" class="btn btn-outline-primary">
+                <i class="bi bi-clock-history"></i> View Full History
+            </a>
+        </div>
+    </div>
+
+    <!-- Today's Meals Section -->
+    <h3 class="mb-3 text-primary"><i class="bi bi-egg-fried"></i> Today's Meal Plan & Bookings</h3>
+    <div class="row g-4 mb-5">
+        {% for meal in ['breakfast', 'lunch', 'dinner'] %}
+            {% set menu_items = menus.get(meal) %}
+            {% set booking_status = bookings.get(meal) %}
+            {% set open_status = deadlines_open.get(meal) %}
+            
+            <div class="col-md-4">
+                <div class="custom-card h-100 border-top border-4 {% if meal == 'breakfast' %}border-primary{% elif meal == 'lunch' %}border-info{% else %}border-success{% endif %}">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="card-title mb-0 text-capitalize">{{ meal }}</h4>
+                            {% if booking_status == 'eating' %}
+                                <span class="status-badge badge-eating"><i class="bi bi-check-circle-fill"></i> Eating</span>
+                            {% elif booking_status == 'skipping' %}
+                                <span class="status-badge badge-skipping"><i class="bi bi-x-circle-fill"></i> Skipping</span>
+                            {% else %}
+                                <span class="status-badge badge-pending"><i class="bi bi-question-circle"></i> Unbooked</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Menu Section -->
+                        <div class="bg-light p-3 rounded mb-3 flex-grow-1">
+                            <h6 class="text-muted mb-1" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;">Menu</h6>
+                            <p class="mb-0 fw-semibold text-dark">
+                                {% if menu_items %}
+                                    {{ menu_items }}
+                                {% else %}
+                                    <span class="text-muted font-italic">Menu not set by admin yet.</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Booking Action Form -->
+                        <div class="mt-auto">
+                            {% if open_status %}
+                                <form method="POST" action="{{ url_for('student.book') }}" class="row g-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="date" value="{{ today }}">
+                                    <input type="hidden" name="meal_type" value="{{ meal }}">
+                                    
+                                    <div class="col-6">
+                                        <button type="submit" name="status" value="eating" class="btn btn-success w-100 {% if booking_status == 'eating' %}active border-dark fw-bold{% endif %}">
+                                            <i class="bi bi-check-lg"></i> Eat
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="submit" name="status" value="skipping" class="btn btn-danger w-100 {% if booking_status == 'skipping' %}active border-dark fw-bold{% endif %}">
+                                            <i class="bi bi-x-lg"></i> Skip
+                                        </button>
+                                    </div>
+                                </form>
+                                <div class="text-center mt-2">
+                                    <small class="text-success"><i class="bi bi-unlock-fill"></i> Booking is open</small>
+                                </div>
+                            {% else %}
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <button class="btn btn-secondary w-100" disabled>Eat</button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-secondary w-100" disabled>Skip</button>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-danger"><i class="bi bi-lock-fill"></i> Booking closed (Deadline passed)</small>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Submit feedback button -->
+                            {% if booking_status %}
+                                <div class="d-grid mt-3">
+                                    <a href="{{ url_for('student.feedback', date=today, meal_type=meal) }}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-star"></i> Submit Feedback
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent History & Feedback Grid -->
+    <div class="row g-4">
+        <!-- Recent Bookings -->
+        <div class="col-md-6">
+            <div class="custom-card p-4">
+                <h4 class="mb-3 text-secondary"><i class="bi bi-journal-check"></i> Recent Bookings</h4>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Meal</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in recent_bookings %}
+                                <tr>
+                                    <td>{{ b.date.strftime("%b %d, %Y") }}</td>
+                                    <td class="text-capitalize">{{ b.meal_type }}</td>
+                                    <td>
+                                        {% if b.status == 'eating' %}
+                                            <span class="badge bg-success">Eating</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Skipping</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('student.feedback', date=b.date, meal_type=b.meal_type) }}" class="btn btn-sm btn-light">
+                                            <i class="bi bi-chat-dots"></i> Feedback
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No recent bookings found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Feedbacks -->
+        <div class="col-md-6">
+            <div class="custom-card p-4">
+                <h4 class="mb-3 text-secondary"><i class="bi bi-chat-left-heart"></i> Your Recent Feedback</h4>
+                <div class="list-group list-group-flush">
+                    {% for f in recent_feedbacks %}
+                        <div class="list-group-item px-0 py-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold text-dark text-capitalize">{{ f.meal_type }} - {{ f.date.strftime("%b %d, %Y") }}</span>
+                                <div>
+                                    {% for idx in range(1, 6) %}
+                                        {% if idx <= f.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="mb-0 text-secondary small">
+                                {% if f.comment %}
+                                    "{{ f.comment }}"
+                                {% else %}
+                                    <span class="text-muted italic">No text comment provided.</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">No feedback submitted yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

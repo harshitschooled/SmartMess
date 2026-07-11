@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}SmartMess - Admin Analytics{% endblock %}
+
+{% block content %}
+<div class="container fade-in">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2><i class="bi bi-graph-up-arrow text-primary"></i> Analytics Dashboard</h2>
+            <p class="text-secondary">Visual analysis of student meal attendance and kitchen food waste trends.</p>
+        </div>
+        
+        <!-- CSV Exports Card -->
+        <div class="custom-card p-3 bg-white border border-secondary border-opacity-25 shadow-sm">
+            <h6 class="mb-2"><i class="bi bi-download"></i> Export Data Reports (CSV)</h6>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('analytics.export_bookings') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-calendar-check"></i> Bookings
+                </a>
+                <a href="{{ url_for('analytics.export_waste') }}" class="btn btn-sm btn-outline-teal" style="color: #0d9488; border-color: #0d9488;">
+                    <i class="bi bi-trash"></i> Waste logs
+                </a>
+                <a href="{{ url_for('analytics.export_feedback') }}" class="btn btn-sm btn-outline-warning text-dark">
+                    <i class="bi bi-chat-left-text"></i> Feedback
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="custom-card p-4 border-start border-4 border-primary">
+                <small class="text-uppercase text-muted fw-semibold">Average Food Waste Percentage</small>
+                <div class="d-flex align-items-baseline gap-2 mt-2">
+                    <span class="display-5 fw-bold text-danger">{{ data.avg_waste_pct }}%</span>
+                </div>
+                <p class="mb-0 text-muted small mt-1">Historically calculated across all logged waste events.</p>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="custom-card p-4 border-start border-4 border-warning">
+                <small class="text-uppercase text-muted fw-semibold">Most Skipped Meal Type</small>
+                <div class="d-flex align-items-baseline gap-2 mt-2">
+                    <span class="display-5 fw-bold text-warning">{{ data.most_skipped_meal }}</span>
+                </div>
+                <p class="mb-0 text-muted small mt-1">Meal type showing the highest skipping checkouts.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card p-4 border-start border-4 border-success">
+                <small class="text-uppercase text-muted fw-semibold">Overall Ratings (Max 5.0)</small>
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span>Breakfast: <strong>{{ data.avg_ratings.breakfast }} ★</strong></span>
+                        <span>Lunch: <strong>{{ data.avg_ratings.lunch }} ★</strong></span>
+                        <span>Dinner: <strong>{{ data.avg_ratings.dinner }} ★</strong></span>
+                    </div>
+                </div>
+                <p class="mb-0 text-muted small mt-3">Calculated average of student ratings.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row g-4 mb-4">
+        <!-- Attendance Trend Chart -->
+        <div class="col-lg-8">
+            <div class="custom-card p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-clock-history"></i> Daily Attendance Trends (Last 14 Days)</h5>
+                <div style="height: 350px;">
+                    <canvas id="attendanceTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Meal Type Breakdown Chart -->
+        <div class="col-lg-4">
+            <div class="custom-card p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-pie-chart"></i> Historical Choices</h5>
+                <div style="height: 350px;">
+                    <canvas id="mealBreakdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row g-4 mb-5">
+        <!-- Food Wastage Trend Chart -->
+        <div class="col-12">
+            <div class="custom-card p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-trash-fill text-danger"></i> Food Prepared vs Food Wasted Trends (kg)</h5>
+                <div style="height: 350px;">
+                    <canvas id="wasteTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Initialize data to pass to charts.js -->
+<script>
+    window.chartData = {
+        attendanceDates: {{ data.attendance_dates|tojson }},
+        eatingCounts: {{ data.eating_counts|tojson }},
+        skippingCounts: {{ data.skipping_counts|tojson }},
+        
+        wasteDates: {{ data.waste_dates|tojson }},
+        preparedTrends: {{ data.prepared_trends|tojson }},
+        wastedTrends: {{ data.wasted_trends|tojson }},
+        
+        mealAgg: {{ data.meal_agg|tojson }}
+    };
+</script>
+<!-- Import charts drawing script -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}
